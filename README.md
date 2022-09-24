@@ -1,10 +1,86 @@
-- 👋 Hi, I’m @19935083390
-- 👀 I’m interested in Cyberspace Security
-- 🌱 I’m currently learning Network security technology
-- 💞️ I’m looking to collaborate on Any technical discussion
-- 📫 How to reach me email：ymy19935083390@163.com
+# 文件隐写
 
-<!---
-19935083390/19935083390 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+第一次写markdown，写的很难看，还请见谅
+
+要完成LSB文件隐写项目，需要同时完成加密与解密两部分代码运算
+
+***同时谨记养成，功能用函数实现的写法，培养良好的编程习惯***
+
+第一部分介绍如何完成图片加密，通过参考部分项目，发现大多数会依赖StegSolve工具辅助工作，不过很明显我不可以使用，也不需要用到，
+
+\
+了解到LSB算法隐写的鲁棒性较差，同时由于LSB本身的缺陷，所以谨慎对图片进行修改或者降噪处理(或许对其进行随机嵌入，或者设计一套Hash映射，并生成一套密钥记录插入位置，抵抗降噪处理？？，还未钻研其可行性，我先写顺序嵌入吧)
+
+## LSB算法的基本特点
+
+1.LSB是一种大容量的数据隐藏算法
+
+2.LSB的鲁棒性相对较差(当stego图像遇到信号处理，比如：加噪声，有损压缩等，在提取嵌入信息时会丢失)
+
+## 常见LSB算法的嵌入方法
+
+1.秘密信息在最低位平面连续嵌入至结束，余下部分不作任何处理(典型软件MandelSteg)
+
+2.秘密信息在最低位平面连续嵌入至结束，余下部分随机化处理(也称沙化处理，典型软件PGMStealth)
+
+3.秘密信息在最低位平面和次低位平面连续嵌入，并且是同时嵌入最低位平面和次低位平面
+
+4.秘密信息在最低位平面嵌入，等最低位平面嵌入完全嵌入之后，再嵌入次低位平面
+
+5.秘密信息在最低位平面随机嵌入
+
+\
+以上五种方式，当嵌入容量不同时，鲁棒性不同
+
+***
+
+Part 1:
+
+ LSB\_encode.py
+
+\
+程序答题分为两部分，对待加密字符进行二进制转写的get\_key()以及对图片进行加密处理的fun()同时为了体现python的代码复用，我写了StringtoBin()，运用库方法进行处理，get\_key()只是用来阐释二进制翻译的原理，有助于对该步骤深入的了解fun()函数经过遍历每个像素点，并以count对记录长度做记录，每次写入一个二进制值进行一次检查，及时退出循环
+
+```python
+a= a-mod(a,2)+int(key[count])
+            count+=1
+```
+
+用这种方式对像素末尾二进制进行改变，
+
+```python
+if count == keylen:
+    img.putpixel((w,h),(a,b,c))
+    break
+```
+
+以这种方式进行及时的写入完毕检查
+
+最后保存图片
+
+***
+
+Part 2:
+
+LSB\_decode.py
+
+相较于加密程序，解密程序的难关在于如何对语句进行有效提取，关于这点我暂时还没有想到什么好的办法，
+
+```python
+def detect (mm):
+    if  mm.isspace() or mm.isalnum() or mm == ',' or mm == '-' or mm == '~' or mm == '(' or mm ==')' :
+        return True
+    return False
+try: #有时候会出现报错，一报错就出结果
+         while detect (mm):  # 步长为8
+            mm = chr(int(data_bit[i:i+8],2))
+            data += mm
+            i += 8
+    except:
+        return data
+    return data
+```
+
+这里采用判断空格，字母，数字可以通过作为结束标志,所以会在结尾停止，不过这种办法也还是无奈之举
+
+基本就是这样的大致写法了，感谢您的观看
